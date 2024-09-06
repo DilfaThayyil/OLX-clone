@@ -8,7 +8,7 @@ const Details = () => {
 
   return (
     <div className="flex p-4">
-     <img src={location?.state?.data?.image}/>
+     <img className="w-96 object-cover" src={location?.state?.data?.images[0]}/>
      <div>
         <h1 className="font-bold text-3xl">$ {location?.state?.data?.price}</h1>
         <h1 className="mt-5"><span className="font-semibold">Category</span> : {location?.state?.data?.category}</h1>
