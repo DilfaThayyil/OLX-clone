@@ -12,9 +12,6 @@ const Main = () => {
   const [menu,setMenu] = useState("")
 
   const getProducts = async() =>{
-    // fetch('https://dummyjson.com/products')
-    //         .then(res=>res.json())
-    //         .then(json=>setProd(json))
     const data = await axios.get('https://dummyjson.com/products')
     console.log(data.data.products[0])
     setProd(data.data.products)
