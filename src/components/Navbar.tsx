@@ -36,8 +36,8 @@ const Navbar = (props:searchProp) => {
       </div>
       <div className="w-28 flex h-12 p-2 ml-6 cursor-pointer rounded-full border border-yellow-500">
       <Link to="/sell">
-  <h1 className="font-bold text-lg ml-3">+ SELL</h1>
-</Link>
+        <h1 className="font-bold text-lg ml-3">+ SELL</h1>
+      </Link>
 
       </div>
     </div>
