@@ -4,17 +4,18 @@ import Details from "./components/Details"
 import SellProduct from "./components/sellProduct"
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ProductProvider } from "./components/ProductContext";
 
 const App = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Main />} />
-        <Route path="/details" element={<Details />} />
-        <Route path="/sellProduct" element={<SellProduct/>}/>
-      </Routes>
-      <ToastContainer />
-    </>
+      <ProductProvider>
+        <Routes>
+          <Route path="/" element={<Main />} />
+          <Route path="/details" element={<Details />} />
+          <Route path="/sell" element={<SellProduct />} />
+        </Routes>
+        <ToastContainer />
+      </ProductProvider>
   );
 };
 

@@ -4,6 +4,7 @@ import arrow from "../assets/arrow.png"
 import search from "../assets/search.png"
 import Login from "./Login"
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 type searchProp = {
   setSearch:any
@@ -34,7 +35,10 @@ const Navbar = (props:searchProp) => {
         <h1 className="font-bold text-lg">Login</h1>
       </div>
       <div className="w-28 flex h-12 p-2 ml-6 cursor-pointer rounded-full border border-yellow-500">
-        <h1 className="font-bold text-lg ml-3">+ SELL</h1>
+      <Link to="/sell">
+  <h1 className="font-bold text-lg ml-3">+ SELL</h1>
+</Link>
+
       </div>
     </div>
     {loginPop && <Login setLoginPop={setLoginPop}/>}

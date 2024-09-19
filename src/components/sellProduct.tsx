@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/setup"; 
-import axios from "axios";
 import { toast } from 'react-toastify'; 
+import { useProductContext } from "./ProductContext";
 
 const SellProduct = () => {
   const [title, setTitle] = useState("");
@@ -11,6 +11,8 @@ const SellProduct = () => {
   const [category, setCategory] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  const {addProduct} = useProductContext()
 
   const handleImageUpload = (e: any) => {
     setImages(e.target.files);
@@ -37,24 +39,30 @@ const SellProduct = () => {
     setUploading(true);
 
     try {
-      const uploadedImageUrls = await uploadImagesToFirebase();
-
-      const productData = {
-        title,
-        price,
-        description,
-        category,
-        images: uploadedImageUrls, 
-      };
-
-      await axios.post("your-api-endpoint/sell-product", productData);
-      toast.success("Product listed successfully!"); 
-    } catch (error) {
-      console.error("Error uploading product:", error);
-      toast.error("Error listing the product. Please try again."); 
-    } finally {
-      setUploading(false);
-    }
+        const uploadedImageUrls = await uploadImagesToFirebase();
+  
+        const newProduct = {
+          title,
+          price,
+          description,
+          category,
+          images: uploadedImageUrls,
+        };
+  
+        addProduct(newProduct);
+  
+        toast.success("Product listed successfully!");
+        setTitle("");
+        setPrice("");
+        setDescription("");
+        setCategory("");
+        setImages([]);
+      } catch (error) {
+        console.error("Error uploading product:", error);
+        toast.error("Error listing the product. Please try again.");
+      } finally {
+        setUploading(false);
+      }
   };
 
   return (
