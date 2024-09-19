@@ -1,113 +1,126 @@
 import { useState } from "react";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase/setup"; 
-import { toast } from 'react-toastify'; 
-import { useProductContext } from "../context/productContext";
+import { storage, db } from "../firebase/setup"; 
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; 
 
 const SellProduct = () => {
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
-  const [images, setImages] = useState<File[]>([]);
+  const [image, setImage] = useState<File | null>(null); 
   const [uploading, setUploading] = useState(false);
+  const navigate = useNavigate();
 
-  const {addProduct} = useProductContext()
-
-  const handleImageUpload = (e: any) => {
-    setImages(e.target.files);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
   };
 
-  const uploadImagesToFirebase = async () => {
-    const uploadedUrls: string[] = [];
-
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      const storageRef = ref(storage, `products/${image.name}`);
-
-      const snapshot = await uploadBytes(storageRef, image);
-
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      uploadedUrls.push(downloadURL);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description || !price || !category || !image) {
+      toast.error("Please fill all fields");
+      return;
     }
 
-    return uploadedUrls;
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
     setUploading(true);
+    const storageRef = ref(storage, `products/${image.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, image);
 
-    try {
-        const uploadedImageUrls = await uploadImagesToFirebase();
-  
-        const newProduct = {
-          title,
-          price,
-          description,
-          category,
-          images: uploadedImageUrls,
-        };
-  
-        addProduct(newProduct);
-  
-        toast.success("Product listed successfully!");
-        setTitle("");
-        setPrice("");
-        setDescription("");
-        setCategory("");
-        setImages([]);
-      } catch (error) {
-        console.error("Error uploading product:", error);
-        toast.error("Error listing the product. Please try again.");
-      } finally {
+    uploadTask.on(
+      "state_changed",
+      () => {},
+      (error) => {
+        toast.error(`Error uploading image: ${error.message}`);
         setUploading(false);
+      },
+      async () => {
+        const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+        
+        try {
+          await addDoc(collection(db, "products"), {
+            title,
+            description,
+            price: Number(price),
+            category,
+            imageUrl,
+          });
+          toast.success("Product uploaded successfully!");
+          setUploading(false);
+          navigate("/");
+        } catch (err) {
+          if (err instanceof Error) {
+            toast.error(`Error saving product: ${err.message}`);
+          } else {
+            toast.error("An unknown error occurred");
+          }
+          setUploading(false);
+        }
       }
+    );
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4">
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border p-2 w-full"
-      />
-      <input
-        type="number"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        className="border p-2 w-full mt-2"
-      />
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="border p-2 w-full mt-2"
-      ></textarea>
-      <input
-        type="text"
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="border p-2 w-full mt-2"
-      />
-      <input
-        type="file"
-        multiple
-        onChange={handleImageUpload}
-        className="mt-2"
-      />
-      <button
-        type="submit"
-        className="bg-blue-500 text-white p-2 mt-4"
-        disabled={uploading}
-      >
-        {uploading ? "Uploading..." : "Sell Product"}
-      </button>
-    </form>
+    <div className="p-5">
+      <h1 className="text-3xl font-bold mb-5">Sell Your Product</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="border p-2 mb-4 w-full"
+          />
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="border p-2 mb-4 w-full"
+          ></textarea>
+        </div>
+        <div>
+          <label>Price</label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="border p-2 mb-4 w-full"
+          />
+        </div>
+        <div>
+          <label>Category</label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="border p-2 mb-4 w-full"
+          />
+        </div>
+        <div>
+          <label>Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="border p-2 mb-4 w-full"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded"
+          disabled={uploading}
+        >
+          {uploading ? "Uploading..." : "Upload Product"}
+        </button>
+      </form>
+    </div>
   );
 };
 
