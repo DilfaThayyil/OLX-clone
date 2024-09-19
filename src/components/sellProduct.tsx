@@ -26,43 +26,54 @@ const SellProduct = () => {
       toast.error("Please fill all fields");
       return;
     }
-
+  
     setUploading(true);
-    const storageRef = ref(storage, `products/${image.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, image);
-
-    uploadTask.on(
-      "state_changed",
-      () => {},
-      (error) => {
-        toast.error(`Error uploading image: ${error.message}`);
-        setUploading(false);
-      },
-      async () => {
-        const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-        
-        try {
-          await addDoc(collection(db, "products"), {
-            title,
-            description,
-            price: Number(price),
-            category,
-            imageUrl,
-          });
-          toast.success("Product uploaded successfully!");
+    try {
+      const storageRef = ref(storage, `products/${image.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, image);
+  
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          console.error("Error uploading image:", error);
+          toast.error(`Error uploading image: ${error.message}`);
           setUploading(false);
-          navigate("/");
-        } catch (err) {
-          if (err instanceof Error) {
-            toast.error(`Error saving product: ${err.message}`);
-          } else {
-            toast.error("An unknown error occurred");
+        },
+        async () => {
+          const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          
+          try {
+            await addDoc(collection(db, "products"), {
+              title,
+              description,
+              price: Number(price),
+              category,
+              imageUrl,
+            });
+            toast.success("Product uploaded successfully!");
+            setUploading(false);
+            navigate("/"); // Navigate to product listing page after successful upload
+          } catch (err) {
+            if (err instanceof Error) {
+              toast.error(`Error saving product: ${err.message}`);
+            } else {
+              toast.error("An unknown error occurred");
+            }
+            setUploading(false);
           }
-          setUploading(false);
         }
-      }
-    );
+      );
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast.error("Failed to upload product. Please try again.");
+      setUploading(false);
+    }
   };
+  
 
   return (
     <div className="p-5">
