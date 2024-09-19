@@ -4,8 +4,7 @@ import Details from "./components/Details"
 import SellProduct from "./components/sellProduct"
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ProductProvider } from "./components/ProductContext";
-
+import { ProductProvider } from "../src/context/productContext";
 const App = () => {
   return (
       <ProductProvider>

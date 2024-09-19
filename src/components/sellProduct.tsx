@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/setup"; 
 import { toast } from 'react-toastify'; 
-import { useProductContext } from "./ProductContext";
+import { useProductContext } from "../context/productContext";
 
 const SellProduct = () => {
   const [title, setTitle] = useState("");
