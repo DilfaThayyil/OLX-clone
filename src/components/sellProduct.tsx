@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { storage, db } from "../firebase/setup"; 
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify"; 
@@ -29,6 +29,7 @@ const SellProduct = () => {
   
     setUploading(true);
     try {
+      const storage = getStorage()
       const storageRef = ref(storage, `products/${image.name}`);
       const uploadTask = uploadBytesResumable(storageRef, image);
   
@@ -46,25 +47,37 @@ const SellProduct = () => {
         async () => {
           const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
           
+          console.log({
+            title,
+            description,
+            price: Number(price),
+            category,
+            imageUrl,
+          });
+          
+
           try {
             await addDoc(collection(db, "products"), {
-              title,
-              description,
+              title: title.trim(),
+              description: description.trim(),
               price: Number(price),
-              category,
+              category: category.trim(),
               imageUrl,
             });
+            
             toast.success("Product uploaded successfully!");
             setUploading(false);
             navigate("/"); // Navigate to product listing page after successful upload
           } catch (err) {
             if (err instanceof Error) {
+              console.error("Error saving product: ", err.message); // Log detailed error
               toast.error(`Error saving product: ${err.message}`);
             } else {
-              toast.error("An unknown error occurred");
+              toast.error("An unknown error occurred while saving product.");
             }
             setUploading(false);
           }
+          
         }
       );
     } catch (error) {
