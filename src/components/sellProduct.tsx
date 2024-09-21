@@ -67,10 +67,10 @@ const SellProduct = () => {
             
             toast.success("Product uploaded successfully!");
             setUploading(false);
-            navigate("/"); // Navigate to product listing page after successful upload
+            navigate("/");
           } catch (err) {
             if (err instanceof Error) {
-              console.error("Error saving product: ", err.message); // Log detailed error
+              console.error("Error saving product: ", err.message); 
               toast.error(`Error saving product: ${err.message}`);
             } else {
               toast.error("An unknown error occurred while saving product.");
