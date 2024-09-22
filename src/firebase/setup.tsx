@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore ,collection , getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDihJ1nO7ItAIsyhBzt3IfMv3Dn87rhRiw",
@@ -17,3 +17,17 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const storage = getStorage(app); 
 export const db = getFirestore(app);
+
+export const fetchItemsFromFireStore = async () => {
+  try {
+      const productsCollection = collection(db, 'products');
+      const productsSnapshot = await getDocs(productsCollection);
+      const productsList = productsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+      }));
+      return productsList
+  } catch (error) {
+      console.error("Error fetching products: ", error);
+  }
+}

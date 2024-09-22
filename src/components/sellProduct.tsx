@@ -4,6 +4,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify"; 
+import { useProductContext } from "../context/productContext";
 
 const SellProduct = () => {
   const [title, setTitle] = useState("");
@@ -12,6 +13,7 @@ const SellProduct = () => {
   const [category, setCategory] = useState("");
   const [image, setImage] = useState<File | null>(null); 
   const [uploading, setUploading] = useState(false);
+  const { addProduct } = useProductContext();
   const navigate = useNavigate();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +31,7 @@ const SellProduct = () => {
   
     setUploading(true);
     try {
-      const storage = getStorage()
+      const storage = getStorage();
       const storageRef = ref(storage, `products/${image.name}`);
       const uploadTask = uploadBytesResumable(storageRef, image);
   
@@ -54,30 +56,27 @@ const SellProduct = () => {
             category,
             imageUrl,
           });
-          
 
           try {
-            await addDoc(collection(db, "products"), {
+            const docRef = await addDoc(collection(db, "products"), {
               title: title.trim(),
               description: description.trim(),
               price: Number(price),
               category: category.trim(),
               imageUrl,
             });
-            
+
+            // Add the new product to context
+            addProduct({ id: docRef.id, title, description, price: Number(price), category, imageUrl });
+
             toast.success("Product uploaded successfully!");
             setUploading(false);
-            navigate("/");
+            navigate("/"); // Navigate back to main page
           } catch (err) {
-            if (err instanceof Error) {
-              console.error("Error saving product: ", err.message); 
-              toast.error(`Error saving product: ${err.message}`);
-            } else {
-              toast.error("An unknown error occurred while saving product.");
-            }
+            console.error("Error saving product: ", err instanceof Error ? err.message : err);
+            toast.error(`Error saving product: ${err instanceof Error ? err.message : "Unknown error"}`);
             setUploading(false);
           }
-          
         }
       );
     } catch (error) {
@@ -87,7 +86,6 @@ const SellProduct = () => {
     }
   };
   
-
   return (
     <div className="p-5">
       <h1 className="text-3xl font-bold mb-5">Sell Your Product</h1>
@@ -107,7 +105,7 @@ const SellProduct = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="border p-2 mb-4 w-full"
-          ></textarea>
+          />
         </div>
         <div>
           <label>Price</label>
