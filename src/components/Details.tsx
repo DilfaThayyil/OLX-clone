@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom"
 
 const Details = () => {
 
-    const location = useLocation()
+    const location = useLocation();
     const product = location?.state?.data
     console.log(location)
     console.log("product data : ",location.state.data)
