@@ -66,7 +66,6 @@ const SellProduct = () => {
               imageUrl,
             });
 
-            // Add the new product to context
             addProduct({ id: docRef.id, title, description, price: Number(price), category, imageUrl });
 
             toast.success("Product uploaded successfully!");
