@@ -31,9 +31,9 @@ const Navbar = (props:searchProp) => {
         <h1 className="font-semibold">ENGLISH</h1>
         <img src={arrow} className="w-8 h-7"/>
       </div>
-      <div onClick={()=> setLoginPop(!loginPop)} className="flex h-12 p-3 ml-6 cursor-pointer underline hover:no-underline">
+      {/* <div onClick={()=> setLoginPop(!loginPop)} className="flex h-12 p-3 ml-6 cursor-pointer underline hover:no-underline">
         <h1 className="font-bold text-lg">Login</h1>
-      </div>
+      </div> */}
       <div className="w-28 flex h-12 p-2 ml-6 cursor-pointer rounded-full border border-yellow-500">
       <Link to="/sell">
         <h1 className="font-bold text-lg ml-3">+ SELL</h1>
